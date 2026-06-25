@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>مصر الذكية - الاستوديو الشامل</title>
+    <title data-i18n="app_title">مصر الذكية - الاستوديو الشامل</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,7 +28,7 @@
             
             <button id="modeSelectorTrigger" class="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-white bg-white/5 border border-white/10 hover:bg-white/10 py-2 px-4 rounded-full transition active:scale-95">
                 <i id="currentModeIcon" class="fa-regular fa-comment-dots text-[11px]"></i>
-                <span id="currentModeText">استوديو المحادثة</span>
+                <span id="currentModeText" data-i18n="chat_studio">استوديو المحادثة</span>
                 <i class="fa-solid fa-chevron-down text-[9px] text-gray-400"></i>
             </button>
 
@@ -43,12 +43,12 @@
     <div id="appSidebar" class="fixed inset-y-0 right-0 w-[280px] bg-[#0d0d0f] z-[60] transform translate-x-full transition-transform duration-300 border-l border-white/5 flex flex-col">
         <div class="p-4 border-b border-white/5">
             <button id="sidebarNewChatBtn" class="w-full bg-white text-black hover:bg-gray-200 rounded-xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg">
-                <i class="fa-solid fa-plus text-xs"></i> محادثة جديدة
+                <i class="fa-solid fa-plus text-xs"></i> <span data-i18n="new_chat">محادثة جديدة</span>
             </button>
         </div>
         
         <div class="flex-1 overflow-y-auto p-3 relative">
-            <div class="text-[11px] text-gray-500 mb-3 font-bold px-2">السجل الأخير</div>
+            <div class="text-[11px] text-gray-500 mb-3 font-bold px-2" data-i18n="recent_history">السجل الأخير</div>
             <div id="chatHistoryContainer" class="flex flex-col gap-1 pb-10"></div>
         </div>
 
@@ -56,15 +56,15 @@
             <div class="flex justify-between gap-2 mb-3">
                 <button id="themeToggleBtnSidebar" class="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 transition active:scale-95">
                     <i class="fa-solid fa-moon text-xs text-gray-300"></i>
-                    <span class="text-[9px] font-bold text-gray-400">المظهر</span>
+                    <span class="text-[9px] font-bold text-gray-400" data-i18n="theme">المظهر</span>
                 </button>
                 <button id="langToggleBtnSidebar" class="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 transition active:scale-95">
-                    <span class="text-xs font-bold text-gray-300">EN</span>
-                    <span class="text-[9px] font-bold text-gray-400">اللغة</span>
+                    <span class="text-xs font-bold text-gray-300" id="currentLangLabel">EN</span>
+                    <span class="text-[9px] font-bold text-gray-400" data-i18n="language">اللغة</span>
                 </button>
-                <button onclick="openCenterModal('loginModal')" class="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 transition active:scale-95 text-[#facc15]">
+                <button id="loginBtnSidebar" onclick="openCenterModal('loginModal')" class="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl py-2 flex flex-col items-center justify-center gap-1 transition active:scale-95 text-[#facc15]">
                     <i class="fa-solid fa-user text-xs"></i>
-                    <span class="text-[9px] font-bold">دخول</span>
+                    <span class="text-[9px] font-bold" data-i18n="login">دخول</span>
                 </button>
             </div>
         </div>
@@ -73,17 +73,17 @@
             <button id="profileMenuBtn" class="flex items-center gap-3 w-full text-right p-2 rounded-xl hover:bg-white/5 transition">
                 <img src="https://ui-avatars.com/api/?name=User&background=random" class="w-10 h-10 rounded-full bg-zinc-800 border border-white/10">
                 <div class="flex-1 overflow-hidden">
-                    <div class="text-white text-sm font-bold truncate">ضيف ذكي</div>
-                    <div class="text-gray-400 text-[10px] truncate mt-0.5">انقر لإدارة الحساب</div>
+                    <div class="text-white text-sm font-bold truncate" data-i18n="smart_guest">ضيف ذكي</div>
+                    <div class="text-gray-400 text-[10px] truncate mt-0.5" data-i18n="manage_account">انقر لإدارة الحساب</div>
                 </div>
             </button>
             
             <div id="profilePopover" class="absolute bottom-[calc(100%-10px)] right-4 left-4 bg-[#1a1a1c] border border-white/10 rounded-xl p-2 mb-2 hidden flex-col gap-0.5 shadow-2xl z-[65]">
-                <a href="#" class="text-[#3b82f6] text-[12px] font-bold p-3 hover:bg-white/5 rounded-lg block"><i class="fa-solid fa-shield-halved ml-2"></i>سياسة الخصوصية</a>
-                <a href="#" class="text-[#10b981] text-[12px] font-bold p-3 hover:bg-white/5 rounded-lg block"><i class="fa-solid fa-file-contract ml-2"></i>اتفاقية المستخدم</a>
+                <a href="#" class="text-[#3b82f6] text-[12px] font-bold p-3 hover:bg-white/5 rounded-lg block"><i class="fa-solid fa-shield-halved ml-2"></i><span data-i18n="privacy_policy">سياسة الخصوصية</span></a>
+                <a href="#" class="text-[#10b981] text-[12px] font-bold p-3 hover:bg-white/5 rounded-lg block"><i class="fa-solid fa-file-contract ml-2"></i><span data-i18n="user_agreement">اتفاقية المستخدم</span></a>
                 <div class="h-px w-full bg-white/10 my-1"></div>
-                <button onclick="openCenterModal('logoutModal')" class="text-[#eab308] text-[12px] font-bold p-3 hover:bg-white/5 rounded-lg text-right w-full block"><i class="fa-solid fa-arrow-right-from-bracket ml-2"></i>تسجيل الخروج</button>
-                <button onclick="openCenterModal('deleteAccountModal')" class="text-[#ef4444] text-[12px] font-bold p-3 hover:bg-white/5 rounded-lg text-right w-full block"><i class="fa-solid fa-trash ml-2"></i>حذف الحساب</button>
+                <button onclick="openCenterModal('logoutModal')" class="text-[#eab308] text-[12px] font-bold p-3 hover:bg-white/5 rounded-lg text-right w-full block"><i class="fa-solid fa-arrow-right-from-bracket ml-2"></i><span data-i18n="logout">تسجيل الخروج</span></button>
+                <button onclick="openCenterModal('deleteAccountModal')" class="text-[#ef4444] text-[12px] font-bold p-3 hover:bg-white/5 rounded-lg text-right w-full block"><i class="fa-solid fa-trash ml-2"></i><span data-i18n="delete_account">حذف الحساب</span></button>
             </div>
         </div>
     </div>
@@ -95,13 +95,13 @@
             <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center text-2xl text-white shadow-lg">
                 <i class="fa-regular fa-comment-dots"></i>
             </div>
-            <h2 class="text-lg font-extrabold text-white">استوديو الدردشة الذكي</h2>
-            <p class="text-xs text-gray-500 max-w-[280px] leading-relaxed font-medium">النموذج النشط: <span id="welcomeModelDisplay" class="text-white font-bold">DeepSeek V4 Pro</span></p>
+            <h2 class="text-lg font-extrabold text-white" data-i18n="welcome_title">استوديو الدردشة الذكي</h2>
+            <p class="text-xs text-gray-500 max-w-[280px] leading-relaxed font-medium"><span data-i18n="active_model">النموذج النشط</span>: <span id="welcomeModelDisplay" class="text-white font-bold">DeepSeek V4 Pro</span></p>
         </div>
 
         <div id="inspirationSection" class="hidden space-y-4">
             <div class="flex justify-between items-center px-1">
-                <span class="text-sm text-white font-bold"><i class="fa-solid fa-sparkles text-white ml-2 text-xs"></i>إبدأ التوليد الآن بكلماتك أو صورك</span>
+                <span class="text-sm text-white font-bold"><i class="fa-solid fa-sparkles text-white ml-2 text-xs"></i><span data-i18n="inspiration_title">إبدأ التوليد الآن بكلماتك أو صورك</span></span>
             </div>
         </div>
 
@@ -116,7 +116,7 @@
             <button id="dynamicActionBtn" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white rounded-xl transition flex-shrink-0 bg-gray-800/40 active:scale-95">
                 <i id="dynamicActionIcon" class="fa-solid fa-paperclip text-base"></i>
             </button>
-            <textarea id="promptInput" rows="1" class="bg-transparent w-full outline-none text-sm py-2.5 text-white placeholder-gray-500 font-medium" placeholder="اسأل أو اكتب ما تريد هنا..."></textarea>
+            <textarea id="promptInput" rows="1" class="bg-transparent w-full outline-none text-sm py-2.5 text-white placeholder-gray-500 font-medium" data-i18n-placeholder="input_placeholder" placeholder="اسأل أو اكتب ما تريد هنا..."></textarea>
             <button id="sendBtn" class="bg-white text-black rounded-xl w-10 h-10 flex-shrink-0 flex items-center justify-center opacity-40 transition-all duration-300 pointer-events-none">
                 <i class="fa-solid fa-paper-plane text-sm translate-x-[-1px] translate-y-[1px]"></i>
             </button>
@@ -127,8 +127,8 @@
             <div id="generativeOptionsSection" class="flex flex-col gap-3">
                 <div class="flex flex-col gap-2">
                     <div class="flex justify-between items-center">
-                        <span class="text-xs text-white font-bold"><i class="fa-solid fa-paperclip ml-1 text-[10px]"></i> المرفقات</span>
-                        <span id="imageHintText" class="text-[10px] text-black bg-white px-2 py-0.5 rounded-md font-bold">صور مرجعية (2)</span>
+                        <span class="text-xs text-white font-bold"><i class="fa-solid fa-paperclip ml-1 text-[10px]"></i> <span data-i18n="attachments">المرفقات</span></span>
+                        <span id="imageHintText" class="text-[10px] text-black bg-white px-2 py-0.5 rounded-md font-bold" data-i18n="ref_images">صور مرجعية (2)</span>
                     </div>
                     <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
                         <div onclick="triggerGenUpload(0)" id="genSlot-0" class="image-slot"><i class="fa-solid fa-plus text-gray-500"></i></div>
@@ -140,8 +140,8 @@
 
                 <div class="flex flex-col gap-2">
                     <div class="flex justify-between items-center">
-                        <span class="text-xs text-white font-bold"><i class="fa-solid fa-microchip ml-1 text-[10px]"></i> النموذج الذكي</span>
-                        <button id="openModelSelect" class="text-[10px] text-blue-400 font-bold hover:underline">تغيير</button>
+                        <span class="text-xs text-white font-bold"><i class="fa-solid fa-microchip ml-1 text-[10px]"></i> <span data-i18n="smart_model">النموذج الذكي</span></span>
+                        <button id="openModelSelect" class="text-[10px] text-blue-400 font-bold hover:underline" data-i18n="chat_menu_rename">تغيير</button>
                     </div>
                     <div class="bg-white/5 border border-white/5 p-3 rounded-xl flex items-center justify-between">
                         <span id="selectedModelLabel" class="text-xs text-gray-300 font-bold">DeepSeek V4 Pro</span>
@@ -150,7 +150,7 @@
                 </div>
 
                 <div class="flex flex-col gap-2">
-                    <span class="text-xs text-white font-bold"><i class="fa-solid fa-expand ml-1 text-[10px]"></i> أبعاد التوليد</span>
+                    <span class="text-xs text-white font-bold"><i class="fa-solid fa-expand ml-1 text-[10px]"></i> <span data-i18n="gen_dimensions">أبعاد التوليد</span></span>
                     <div id="ratioContainer" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
                 </div>
 
@@ -159,14 +159,14 @@
 
                 <div id="extendContainer" class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
                     <div class="flex flex-col">
-                        <span class="text-xs text-white font-bold">توسيع ذكي (Extend)</span>
-                        <span class="text-[9px] text-gray-500 mt-0.5">زيادة مدة الفيديو لـ 10 ثوانٍ</span>
+                        <span class="text-xs text-white font-bold" data-i18n="smart_extend">توسيع ذكي (Extend)</span>
+                        <span class="text-[9px] text-gray-500 mt-0.5" data-i18n="extend_desc">زيادة مدة الفيديو لـ 10 ثوانٍ</span>
                     </div>
                     <div id="extendSwitch" class="extend-switch"></div>
                 </div>
             </div>
 
-            <button id="closeOptionsBtn" class="w-full py-3 mt-2 text-xs font-bold text-gray-500 hover:text-white transition">إغلاق الإعدادات</button>
+            <button id="closeOptionsBtn" class="w-full py-3 mt-2 text-xs font-bold text-gray-500 hover:text-white transition" data-i18n="close_settings">إغلاق الإعدادات</button>
         </div>
     </div>
 
@@ -176,31 +176,31 @@
 <div id="modeSelectModal" class="modal-overlay fixed inset-0 bg-black/80 z-[100] flex items-end opacity-0 pointer-events-none">
     <div class="modal-content bg-[#121214] p-5 space-y-4">
         <div class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-2"></div>
-        <h3 class="text-lg font-extrabold text-white text-center">اختر وضع العمل</h3>
+        <h3 class="text-lg font-extrabold text-white text-center" data-i18n="select_mode">اختر وضع العمل</h3>
         <div class="grid gap-3">
             <button data-mode="chat" class="mode-option w-full p-4 rounded-xl flex items-center gap-4 transition-all bg-white text-black font-bold shadow-lg">
                 <div class="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center text-lg"><i class="fa-regular fa-comment-dots"></i></div>
-                <div class="text-right"><div class="text-sm">استوديو المحادثة</div><div class="text-[10px] opacity-60">دردشة ذكية وتحليل ملفات</div></div>
+                <div class="text-right"><div class="text-sm" data-i18n="chat_studio">استوديو المحادثة</div><div class="text-[10px] opacity-60" data-i18n="chat_desc">دردشة ذكية وتحليل ملفات</div></div>
             </button>
             <button data-mode="image" class="mode-option w-full p-4 rounded-xl flex items-center gap-4 transition-all bg-zinc-900 text-white border border-white/5 hover:bg-zinc-800">
                 <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-lg"><i class="fa-regular fa-image"></i></div>
-                <div class="text-right"><div class="text-sm">استوديو الصور</div><div class="text-[10px] text-gray-500">توليد صور فنية واقعية</div></div>
+                <div class="text-right"><div class="text-sm" data-i18n="image_studio">استوديو الصور</div><div class="text-[10px] text-gray-500" data-i18n="image_desc">توليد صور فنية واقعية</div></div>
             </button>
             <button data-mode="video" class="mode-option w-full p-4 rounded-xl flex items-center gap-4 transition-all bg-zinc-900 text-white border border-white/5 hover:bg-zinc-800">
                 <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-lg"><i class="fa-solid fa-clapperboard"></i></div>
-                <div class="text-right"><div class="text-sm">استوديو الفيديو</div><div class="text-[10px] text-gray-500">توليد فيديوهات سينمائية قصيرة</div></div>
+                <div class="text-right"><div class="text-sm" data-i18n="video_studio">استوديو الفيديو</div><div class="text-[10px] text-gray-500" data-i18n="video_desc">توليد فيديوهات سينمائية قصيرة</div></div>
             </button>
         </div>
-        <button onclick="this.closest('.modal-overlay').classList.remove('active')" class="w-full py-4 text-sm font-bold text-gray-500">إلغاء</button>
+        <button onclick="this.closest('.modal-overlay').classList.remove('active')" class="w-full py-4 text-sm font-bold text-gray-500" data-i18n="cancel">إلغاء</button>
     </div>
 </div>
 
 <div id="modelSelectModal" class="modal-overlay fixed inset-0 bg-black/80 z-[100] flex items-end opacity-0 pointer-events-none">
     <div class="modal-content bg-[#121214] p-5 max-h-[80vh] flex flex-col">
         <div class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-4"></div>
-        <h3 class="text-lg font-extrabold text-white text-center mb-4">اختر النموذج الذكي</h3>
+        <h3 class="text-lg font-extrabold text-white text-center mb-4" data-i18n="select_model_title">اختر النموذج الذكي</h3>
         <div id="modelsList" class="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-1"></div>
-        <button onclick="this.closest('.modal-overlay').classList.remove('active')" class="w-full py-4 mt-2 text-sm font-bold text-gray-500">إغلاق</button>
+        <button onclick="this.closest('.modal-overlay').classList.remove('active')" class="w-full py-4 mt-2 text-sm font-bold text-gray-500" data-i18n="cancel">إغلاق</button>
     </div>
 </div>
 
@@ -210,23 +210,23 @@
         <div class="w-20 h-20 bg-zinc-900 rounded-[24px] border border-white/10 flex items-center justify-center text-4xl text-white mx-auto mb-6 shadow-lg">
             <i class="fa-solid fa-shield-halved"></i>
         </div>
-        <h3 class="text-2xl font-black text-white mb-3">تسجيل الدخول</h3>
-        <p class="text-gray-400 text-sm leading-relaxed mb-8 font-medium px-2">سجل دخولك الآن لمزامنة محادثاتك والوصول إليها من أي مكان بأمان تام.</p>
-        <button class="w-full bg-white text-black font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-gray-200 transition active:scale-95 shadow-xl">
+        <h3 class="text-2xl font-black text-white mb-3" data-i18n="login">تسجيل الدخول</h3>
+        <p class="text-gray-400 text-sm leading-relaxed mb-8 font-medium px-2" data-i18n="login_desc">سجل دخولك الآن لمزامنة محادثاتك والوصول إليها من أي مكان بأمان تام.</p>
+        <button id="googleLoginBtn" class="w-full bg-white text-black font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-gray-200 transition active:scale-95 shadow-xl">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
-            متابعة باستخدام جوجل
+            <span data-i18n="google_login">متابعة باستخدام جوجل</span>
         </button>
-        <button onclick="closeCenterModal('loginModal')" class="mt-6 text-gray-500 text-sm font-bold hover:text-white transition">ليس الآن، سأفعل لاحقاً</button>
+        <button onclick="closeCenterModal('loginModal')" class="mt-6 text-gray-500 text-sm font-bold hover:text-white transition" data-i18n="not_now">ليس الآن، سأفعل لاحقاً</button>
     </div>
 </div>
 
 <div id="logoutModal" class="center-modal-overlay fixed inset-0 bg-black/90 z-[110] flex items-center justify-center opacity-0 pointer-events-none px-6 backdrop-blur-md">
     <div class="center-modal-content bg-[#121214] border border-white/10 w-full max-w-sm rounded-[32px] p-8 text-center shadow-2xl">
-        <h3 class="text-xl font-black text-white mb-3">تسجيل الخروج</h3>
-        <p class="text-gray-400 text-sm leading-relaxed mb-8 font-medium">هل أنت متأكد من رغبتك في تسجيل الخروج؟ سيتم حفظ كافة محادثاتك بأمان.</p>
+        <h3 class="text-xl font-black text-white mb-3" data-i18n="logout">تسجيل الخروج</h3>
+        <p class="text-gray-400 text-sm leading-relaxed mb-8 font-medium" data-i18n="logout_confirm">هل أنت متأكد من رغبتك في تسجيل الخروج؟ سيتم حفظ كافة محادثاتك بأمان.</p>
         <div class="flex gap-3">
-            <button onclick="closeCenterModal('logoutModal')" class="flex-1 bg-zinc-800 text-white font-bold py-4 rounded-2xl hover:bg-zinc-700 transition">إلغاء</button>
-            <button onclick="saveChatLogout()" class="flex-1 bg-red-500 text-white font-bold py-4 rounded-2xl hover:bg-red-600 transition shadow-lg shadow-red-500/20">خروج</button>
+            <button onclick="closeCenterModal('logoutModal')" class="flex-1 bg-zinc-800 text-white font-bold py-4 rounded-2xl hover:bg-zinc-700 transition" data-i18n="cancel">إلغاء</button>
+            <button id="confirmLogoutBtn" class="flex-1 bg-red-500 text-white font-bold py-4 rounded-2xl hover:bg-red-600 transition shadow-lg shadow-red-500/20" data-i18n="logout">خروج</button>
         </div>
     </div>
 </div>
@@ -236,22 +236,22 @@
         <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-2xl text-red-500 mx-auto mb-4">
             <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
-        <h3 class="text-xl font-black text-white mb-3">حذف الحساب نهائياً</h3>
-        <p class="text-gray-400 text-xs leading-relaxed mb-8 font-medium">تحذير: هذا الإجراء سيؤدي لحذف كافة بياناتك ومحادثاتك ولا يمكن التراجع عنه.</p>
+        <h3 class="text-xl font-black text-white mb-3" data-i18n="delete_account_title">حذف الحساب نهائياً</h3>
+        <p class="text-gray-400 text-xs leading-relaxed mb-8 font-medium" data-i18n="delete_account_desc">تحذير: هذا الإجراء سيؤدي لحذف كافة بياناتك ومحادثاتك ولا يمكن التراجع عنه.</p>
         <div class="flex flex-col gap-3">
-            <button onclick="closeCenterModal('deleteAccountModal')" class="w-full bg-zinc-800 text-white font-bold py-4 rounded-2xl hover:bg-zinc-700 transition">تراجع، لا أريد الحذف</button>
-            <button class="w-full bg-transparent text-red-500 font-bold py-3 text-sm hover:underline">نعم، احذف حسابي</button>
+            <button onclick="closeCenterModal('deleteAccountModal')" class="w-full bg-zinc-800 text-white font-bold py-4 rounded-2xl hover:bg-zinc-700 transition" data-i18n="cancel">تراجع، لا أريد الحذف</button>
+            <button class="w-full bg-transparent text-red-500 font-bold py-3 text-sm hover:underline" data-i18n="delete_confirm">نعم، احذف حسابي</button>
         </div>
     </div>
 </div>
 
 <div id="renameChatModal" class="center-modal-overlay fixed inset-0 bg-black/90 z-[110] flex items-center justify-center opacity-0 pointer-events-none px-6 backdrop-blur-md">
     <div class="center-modal-content bg-[#121214] border border-white/10 w-full max-w-sm rounded-[32px] p-6 shadow-2xl">
-        <h3 class="text-lg font-black text-white mb-4 text-right">تعديل اسم المحادثة</h3>
-        <input type="text" id="renameChatInput" class="w-full bg-zinc-900 border border-white/10 rounded-xl p-4 text-white text-sm outline-none focus:border-white/30 mb-6 text-right font-bold" placeholder="أدخل الاسم الجديد...">
+        <h3 class="text-lg font-black text-white mb-4 text-right" data-i18n="edit_chat_name">تعديل اسم المحادثة</h3>
+        <input type="text" id="renameChatInput" class="w-full bg-zinc-900 border border-white/10 rounded-xl p-4 text-white text-sm outline-none focus:border-white/30 mb-6 text-right font-bold" data-i18n-placeholder="edit_chat_name" placeholder="أدخل الاسم الجديد...">
         <div class="flex gap-3">
-            <button onclick="closeCenterModal('renameChatModal')" class="flex-1 bg-zinc-800 text-white font-bold py-3.5 rounded-xl text-sm">إلغاء</button>
-            <button onclick="saveChatRename()" class="flex-1 bg-white text-black font-bold py-3.5 rounded-xl text-sm">حفظ الاسم</button>
+            <button onclick="closeCenterModal('renameChatModal')" class="flex-1 bg-zinc-800 text-white font-bold py-3.5 rounded-xl text-sm" data-i18n="cancel">إلغاء</button>
+            <button id="saveRenameBtn" class="flex-1 bg-white text-black font-bold py-3.5 rounded-xl text-sm" data-i18n="save_name">حفظ الاسم</button>
         </div>
     </div>
 </div>
@@ -261,12 +261,12 @@
         <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center text-2xl text-white mx-auto mb-4">
             <i class="fa-solid fa-lock"></i>
         </div>
-        <h3 class="text-lg font-black text-white mb-2">قفل المحادثة بكلمة سر</h3>
-        <p class="text-gray-500 text-xs mb-6 font-medium">أدخل 4 أرقام لحماية هذه المحادثة</p>
+        <h3 class="text-lg font-black text-white mb-2" data-i18n="lock_chat_title">قفل المحادثة بكلمة سر</h3>
+        <p class="text-gray-500 text-xs mb-6 font-medium" data-i18n="lock_chat_desc">أدخل 4 أرقام لحماية هذه المحادثة</p>
         <input type="password" id="setPinInput" maxlength="4" class="pin-input-box w-full bg-zinc-900 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-white/30 mb-8" placeholder="••••">
         <div class="flex gap-3">
-            <button onclick="closeCenterModal('setLockModal')" class="flex-1 bg-zinc-800 text-white font-bold py-4 rounded-2xl text-sm">إلغاء</button>
-            <button onclick="saveChatLock()" class="flex-1 bg-white text-black font-bold py-4 rounded-2xl text-sm">تفعيل القفل</button>
+            <button onclick="closeCenterModal('setLockModal')" class="flex-1 bg-zinc-800 text-white font-bold py-4 rounded-2xl text-sm" data-i18n="cancel">إلغاء</button>
+            <button id="saveLockBtn" class="flex-1 bg-white text-black font-bold py-4 rounded-2xl text-sm" data-i18n="activate_lock">تفعيل القفل</button>
         </div>
     </div>
 </div>
@@ -276,12 +276,12 @@
         <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-2xl text-red-500 mx-auto mb-4">
             <i class="fa-solid fa-key"></i>
         </div>
-        <h3 class="text-lg font-black text-white mb-2">المحادثة محمية</h3>
-        <p class="text-gray-500 text-xs mb-6 font-medium">أدخل كلمة السر المكونة من 4 أرقام للمتابعة</p>
+        <h3 class="text-lg font-black text-white mb-2" data-i18n="chat_protected">المحادثة محمية</h3>
+        <p class="text-gray-500 text-xs mb-6 font-medium" data-i18n="unlock_desc">أدخل كلمة السر المكونة من 4 أرقام للمتابعة</p>
         <input type="password" id="unlockPinInput" maxlength="4" class="pin-input-box w-full bg-zinc-900 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-white/30 mb-8" placeholder="••••">
         <div class="flex gap-4">
-            <button onclick="closeCenterModal('unlockChatModal')" class="flex-1 text-gray-500 text-sm font-bold">إلغاء</button>
-            <button onclick="verifyChatUnlock()" class="flex-[2] bg-white text-black font-bold py-4 rounded-2xl text-sm shadow-xl">فتح المحادثة</button>
+            <button onclick="closeCenterModal('unlockChatModal')" class="flex-1 text-gray-500 text-sm font-bold" data-i18n="cancel">إلغاء</button>
+            <button id="verifyUnlockBtn" class="flex-[2] bg-white text-black font-bold py-4 rounded-2xl text-sm shadow-xl" data-i18n="unlock_chat">فتح المحادثة</button>
         </div>
     </div>
 </div>
@@ -300,8 +300,8 @@
         <video id="mediaViewerVideo" class="max-w-full max-h-full rounded-lg shadow-2xl hidden" controls playsinline></video>
     </div>
     <div class="p-6 bg-gradient-to-t from-black to-transparent text-center">
-        <div id="mediaViewerTitle" class="text-white font-bold text-sm mb-1">معاينة الوسائط</div>
-        <div id="mediaViewerDate" class="text-gray-500 text-[10px]">تم التوليد بواسطة مصر الذكية Pro</div>
+        <div id="mediaViewerTitle" class="text-white font-bold text-sm mb-1" data-i18n="media_preview">معاينة الوسائط</div>
+        <div id="mediaViewerDate" class="text-gray-500 text-[10px]" data-i18n="generated_by">تم التوليد بواسطة مصر الذكية Pro</div>
     </div>
 </div>
 

@@ -1,43 +1,60 @@
 
+    /**
+     * Smart Egypt - Application Logic
+     * الاعتماد الكلي على قاعدة البيانات ونظام الترجمة الدولي
+     */
+
+    let translations = {};
+    let currentLang = localStorage.getItem('appLang') || 'ar';
+
+    // --- Localization System ---
+    async function initTranslations() {
+        try {
+            const response = await fetch('translations.json');
+            translations = await response.json();
+            applyTranslations();
+        } catch (e) { console.error("فشل تحميل ملف الترجمة:", e); }
+    }
+
+    function applyTranslations() {
+        const langData = translations[currentLang];
+        if (!langData) return;
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (langData[key]) el.innerText = langData[key];
+        });
+
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (langData[key]) el.placeholder = langData[key];
+        });
+
+        document.documentElement.lang = currentLang;
+        document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+        document.getElementById('currentLangLabel').innerText = currentLang.toUpperCase();
+        
+        // تحديث النصوص الديناميكية في الواجهة
+        if (currentMode) setMode(currentMode);
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        localStorage.setItem('appLang', currentLang);
+        applyTranslations();
+    }
+
     // --- App Configuration & Initial Data ---
     const appData = {
-        chat: {
-            title: "استوديو المحادثة",
-            icon: "fa-regular fa-comment-dots",
-            placeholder: "اسأل أو اكتب ما تريد هنا...",
-            models: {
-                "DeepSeek V4 Pro": { desc: "أقوى نموذج للدردشة والتحليل المعمق" },
-                "GPT-4o Premium": { desc: "النموذج الأكثر ذكاءً وتطوراً من OpenAI" },
-                "Claude 3.5 Sonnet": { desc: "مثالي للكتابة الإبداعية والبرمجة" }
-            }
-        },
-        image: {
-            title: "استوديو الصور",
-            icon: "fa-regular fa-image",
-            placeholder: "صف الصورة التي تتخيلها بدقة...",
-            models: {
-                "Flux 1.1 Pro": { desc: "دقة فوتوغرافية وتفاصيل مذهلة", ratios: ["1:1", "16:9", "9:16", "3:2", "2:3"], counts: [1, 2, 4], extendable: false },
-                "DALL-E 3 High": { desc: "فهم عميق للوصف الفني المعقد", ratios: ["1:1", "16:9", "9:16"], counts: [1], extendable: false },
-                "Midjourney V6": { desc: "لمسة فنية سينمائية فريدة", ratios: ["1:1", "16:9", "9:16", "4:5"], counts: [1, 4], extendable: false }
-            }
-        },
-        video: {
-            title: "استوديو الفيديو",
-            icon: "fa-solid fa-clapperboard",
-            placeholder: "اكتب وصف المشهد السينمائي...",
-            models: {
-                "Veo 3.1": { desc: "واقعية مذهلة وحركية عالية", ratios: ["16:9", "9:16"], durations: [4, 8], extendable: true },
-                "LTX 2.3": { desc: "دقة تحكم سينمائي", ratios: ["16:9", "1:1"], durations: [5, 10, 15], extendable: true }
-            }
-        }
+        chat: { titleKey: "chat_studio", icon: "fa-regular fa-comment-dots", placeholderKey: "input_placeholder", models: { "DeepSeek V4 Pro": { desc: "أقوى نموذج للدردشة والتحليل المعمق" }, "GPT-4o Premium": { desc: "النموذج الأكثر ذكاءً وتطوراً من OpenAI" }, "Claude 3.5 Sonnet": { desc: "مثالي للكتابة الإبداعية والبرمجة" } } },
+        image: { titleKey: "image_studio", icon: "fa-regular fa-image", placeholderKey: "image_desc", models: { "Flux 1.1 Pro": { desc: "دقة فوتوغرافية وتفاصيل مذهلة", ratios: ["1:1", "16:9", "9:16", "3:2", "2:3"], counts: [1, 2, 4], extendable: false }, "DALL-E 3 High": { desc: "فهم عميق للوصف الفني المعقد", ratios: ["1:1", "16:9", "9:16"], counts: [1], extendable: false }, "Midjourney V6": { desc: "لمسة فنية سينمائية فريدة", ratios: ["1:1", "16:9", "9:16", "4:5"], counts: [1, 4], extendable: false } } },
+        video: { titleKey: "video_studio", icon: "fa-solid fa-clapperboard", placeholderKey: "video_desc", models: { "Veo 3.1": { desc: "واقعية مذهلة وحركية عالية", ratios: ["16:9", "9:16"], durations: [4, 8], extendable: true }, "LTX 2.3": { desc: "دقة تحكم سينمائي", ratios: ["16:9", "1:1"], durations: [5, 10, 15], extendable: true } } }
     };
 
-    let chatHistoryData = [
-        { id: 1, title: "تصميم موقع إلكتروني", pinned: true, locked: false, pin: null },
-        { id: 2, title: "تحليل بيانات السوق لعام 2026", pinned: false, locked: true, pin: "1234" }
-    ];
+    // حذف البيانات الوهمية - الاعتماد كلياً على قاعدة البيانات
+    let chatHistoryData = []; 
     let activeActionChatId = null;
-    let currentChatId = null; // null means new chat
+    let currentChatId = null;
 
     let currentMode = "chat";
     let activeModelsList = appData.chat.models;
@@ -45,7 +62,7 @@
     let currentRatio = "16:9";
     let currentGenSetting = null;
     let isExtended = false;
-    let currentImages = {}; // Max 2 slots
+    let currentImages = {}; 
     let activeUploadSlot = null;
     let chatAttachedImages = [];
 
@@ -65,6 +82,8 @@
     function renderChatHistory() {
         const container = document.getElementById('chatHistoryContainer');
         container.innerHTML = '';
+        const lang = translations[currentLang] || {};
+        
         const sortedChats = [...chatHistoryData].sort((a, b) => (b.pinned === a.pinned) ? 0 : a.pinned ? -1 : 1);
 
         sortedChats.forEach(chat => {
@@ -76,17 +95,17 @@
             const chatEl = document.createElement('div');
             chatEl.className = `group relative flex items-center justify-between p-2.5 rounded-xl hover:bg-white/5 cursor-pointer transition ${isActiveClass}`;
             chatEl.innerHTML = `
-                <div class="flex items-center gap-2 overflow-hidden flex-1" onclick="handleChatClick(${chat.id})">
+                <div class="flex items-center gap-2 overflow-hidden flex-1" onclick="handleChatClick('${chat.id}')">
                     <i class="fa-regular fa-message ${currentChatId === chat.id ? 'text-white' : 'text-gray-500'} text-xs flex-shrink-0"></i>
                     <span class="text-xs ${currentChatId === chat.id ? 'text-white font-bold' : 'text-gray-300 font-medium'} truncate">${pinIconHtml}${lockIconHtml}${displayTitle}</span>
                 </div>
-                <button onclick="toggleChatMenu(event, ${chat.id})" class="text-gray-500 hover:text-white px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition focus:opacity-100"><i class="fa-solid fa-ellipsis-vertical text-xs"></i></button>
+                <button onclick="toggleChatMenu(event, '${chat.id}')" class="text-gray-500 hover:text-white px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition focus:opacity-100"><i class="fa-solid fa-ellipsis-vertical text-xs"></i></button>
                 <div id="chatMenu-${chat.id}" class="chat-action-menu">
-                    <button onclick="togglePinChat(event, ${chat.id})" class="text-right px-3 py-2 text-[11px] text-gray-300 hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-thumbtack w-3"></i> ${chat.pinned ? 'إلغاء التثبيت' : 'تثبيت المحادثة'}</button>
-                    <button onclick="openRenameModal(event, ${chat.id})" class="text-right px-3 py-2 text-[11px] text-gray-300 hover:bg-white/10 flex items-center gap-2" ${chat.locked ? 'disabled style="opacity:0.5"' : ''}><i class="fa-solid fa-pen w-3"></i> تعديل الاسم</button>
-                    <button onclick="openLockModal(event, ${chat.id})" class="text-right px-3 py-2 text-[11px] text-red-400 hover:bg-white/10 flex items-center gap-2"><i class="fa-solid ${chat.locked ? 'fa-unlock' : 'fa-lock'} w-3"></i> ${chat.locked ? 'إلغاء القفل' : 'غلق المحادثة'}</button>
+                    <button onclick="togglePinChat(event, '${chat.id}')" class="text-right px-3 py-2 text-[11px] text-gray-300 hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-thumbtack w-3"></i> ${chat.pinned ? (lang.chat_menu_unpin || 'إلغاء التثبيت') : (lang.chat_menu_pin || 'تثبيت')}</button>
+                    <button onclick="openRenameModal(event, '${chat.id}')" class="text-right px-3 py-2 text-[11px] text-gray-300 hover:bg-white/10 flex items-center gap-2" ${chat.locked ? 'disabled style="opacity:0.5"' : ''}><i class="fa-solid fa-pen w-3"></i> ${lang.chat_menu_rename || 'تعديل'}</button>
+                    <button onclick="openLockModal(event, '${chat.id}')" class="text-right px-3 py-2 text-[11px] text-red-400 hover:bg-white/10 flex items-center gap-2"><i class="fa-solid ${chat.locked ? 'fa-unlock' : 'fa-lock'} w-3"></i> ${chat.locked ? (lang.chat_menu_unlock || 'إلغاء القفل') : (lang.chat_menu_lock || 'غلق')}</button>
                     <div class="h-px bg-white/10 w-full my-0.5"></div>
-                    <button onclick="deleteChat(event, ${chat.id})" class="text-right px-3 py-2 text-[11px] text-red-500 hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-trash w-3"></i> حذف المحادثة</button>
+                    <button onclick="deleteChat(event, '${chat.id}')" class="text-right px-3 py-2 text-[11px] text-red-500 hover:bg-white/10 flex items-center gap-2"><i class="fa-solid fa-trash w-3"></i> ${lang.chat_menu_delete || 'حذف'}</button>
                 </div>`;
             container.appendChild(chatEl);
         });
@@ -98,26 +117,26 @@
 
     window.handleChatClick = function(id) {
         const chat = chatHistoryData.find(c => c.id === id);
-        if (chat.locked) {
+        if (chat && chat.locked) {
             activeActionChatId = id;
             document.getElementById('unlockPinInput').value = '';
             openCenterModal('unlockChatModal');
         } else {
             currentChatId = id;
             renderChatHistory();
-            chatSection.innerHTML = `<div class="text-center text-xs text-gray-500 py-6 font-bold bg-zinc-900/50 rounded-xl mx-2 border border-white/5">تم فتح المحادثة المحددة</div>`;
+            chatSection.innerHTML = `<div class="text-center text-xs text-gray-500 py-6 font-bold bg-zinc-900/50 rounded-xl mx-2 border border-white/5">...</div>`;
             setMode('chat');
             toggleSidebar();
         }
     };
 
-    window.togglePinChat = function(e, id) { e.stopPropagation(); const chat = chatHistoryData.find(c => c.id === id); chat.pinned = !chat.pinned; closeAllChatMenus(); renderChatHistory(); };
+    window.togglePinChat = function(e, id) { e.stopPropagation(); const chat = chatHistoryData.find(c => c.id === id); if(chat) chat.pinned = !chat.pinned; closeAllChatMenus(); renderChatHistory(); };
     window.deleteChat = function(e, id) { e.stopPropagation(); chatHistoryData = chatHistoryData.filter(c => c.id !== id); if(currentChatId === id) document.getElementById('sidebarNewChatBtn').click(); closeAllChatMenus(); renderChatHistory(); };
-    window.openRenameModal = function(e, id) { e.stopPropagation(); closeAllChatMenus(); const chat = chatHistoryData.find(c => c.id === id); if(chat.locked) return; activeActionChatId = id; document.getElementById('renameChatInput').value = chat.title; openCenterModal('renameChatModal'); };
-    window.saveChatRename = function() { const newTitle = document.getElementById('renameChatInput').value.trim(); if(newTitle && activeActionChatId) { chatHistoryData.find(c => c.id === activeActionChatId).title = newTitle; renderChatHistory(); } closeCenterModal('renameChatModal'); };
-    window.openLockModal = function(e, id) { e.stopPropagation(); closeAllChatMenus(); const chat = chatHistoryData.find(c => c.id === id); activeActionChatId = id; if (chat.locked) { chat.locked = false; chat.pin = null; renderChatHistory(); } else { document.getElementById('setPinInput').value = ''; openCenterModal('setLockModal'); } };
-    window.saveChatLock = function() { const pin = document.getElementById('setPinInput').value; if(pin.length === 4 && activeActionChatId) { const chat = chatHistoryData.find(c => c.id === activeActionChatId); chat.locked = true; chat.pin = pin; renderChatHistory(); closeCenterModal('setLockModal'); } };
-    window.verifyChatUnlock = function() { const pin = document.getElementById('unlockPinInput').value; if(activeActionChatId) { const chat = chatHistoryData.find(c => c.id === activeActionChatId); if (chat.pin === pin) { closeCenterModal('unlockChatModal'); setTimeout(() => { currentChatId = chat.id; renderChatHistory(); setMode('chat'); chatSection.innerHTML = `<div class="text-center text-xs text-green-500 py-6 font-bold bg-green-500/10 rounded-xl mx-2 border border-green-500/20"><i class="fa-solid fa-unlock ml-1"></i> تم فتح المحادثة المغلقة بنجاح</div>`; toggleSidebar(); }, 300); } } };
+    window.openRenameModal = function(e, id) { e.stopPropagation(); closeAllChatMenus(); const chat = chatHistoryData.find(c => c.id === id); if(!chat || chat.locked) return; activeActionChatId = id; document.getElementById('renameChatInput').value = chat.title; openCenterModal('renameChatModal'); };
+    window.saveChatRename = function() { const newTitle = document.getElementById('renameChatInput').value.trim(); if(newTitle && activeActionChatId) { const chat = chatHistoryData.find(c => c.id === activeActionChatId); if(chat) chat.title = newTitle; renderChatHistory(); } closeCenterModal('renameChatModal'); };
+    window.openLockModal = function(e, id) { e.stopPropagation(); closeAllChatMenus(); const chat = chatHistoryData.find(c => c.id === id); if(!chat) return; activeActionChatId = id; if (chat.locked) { chat.locked = false; chat.pin = null; renderChatHistory(); } else { document.getElementById('setPinInput').value = ''; openCenterModal('setLockModal'); } };
+    window.saveChatLock = function() { const pin = document.getElementById('setPinInput').value; if(pin.length === 4 && activeActionChatId) { const chat = chatHistoryData.find(c => c.id === activeActionChatId); if(chat) { chat.locked = true; chat.pin = pin; renderChatHistory(); closeCenterModal('setLockModal'); } } };
+    window.verifyChatUnlock = function() { const pin = document.getElementById('unlockPinInput').value; if(activeActionChatId) { const chat = chatHistoryData.find(c => c.id === activeActionChatId); if (chat && chat.pin === pin) { closeCenterModal('unlockChatModal'); setTimeout(() => { currentChatId = chat.id; renderChatHistory(); setMode('chat'); toggleSidebar(); }, 300); } } };
 
     // --- Mode Switching ---
     document.getElementById('modeSelectorTrigger').addEventListener('click', () => { document.getElementById('modeSelectModal').classList.add('active'); });
@@ -133,7 +152,9 @@
     function setMode(mode) {
         currentMode = mode;
         const config = appData[mode];
-        document.getElementById('currentModeText').innerText = config.title;
+        const lang = translations[currentLang] || {};
+        
+        document.getElementById('currentModeText').innerText = lang[config.titleKey] || config.titleKey;
         document.getElementById('currentModeIcon').className = config.icon + " text-[11px]";
         
         if(!currentChatId) chatSection.innerHTML = '';
@@ -157,7 +178,7 @@
             generativeOptionsSection.classList.add('hidden');
             dynamicActionIcon.className = "fa-solid fa-paperclip text-base";
             optionsArea.classList.add('collapsed');
-            promptInput.placeholder = config.placeholder;
+            promptInput.placeholder = lang[config.placeholderKey] || config.placeholderKey;
             
             chatAttachedImages = [];
             renderChatPreviews();
@@ -169,10 +190,10 @@
             chatModelSelectorTrigger.classList.add('hidden');
             generativeOptionsSection.classList.remove('hidden');
             dynamicActionIcon.className = "fa-solid fa-sliders text-base";
-            promptInput.placeholder = config.placeholder;
+            promptInput.placeholder = lang[config.placeholderKey] || config.placeholderKey;
             chatAttachmentPreviewArea.classList.add('hidden');
             
-            currentImages = {}; // Reset ref images
+            currentImages = {}; 
             updateGenUI();
             document.getElementById('openModelSelect').onclick = () => { activeModelsList = appData[currentMode].models; renderModelSelectModal(false); };
         }
@@ -219,7 +240,7 @@
         settingsContainer.innerHTML = '';
         
         if(currentMode === 'image') {
-            document.getElementById('dynamicSettingsTitle').innerHTML = '<i class="fa-regular fa-images ml-1"></i> عدد الصور (النتائج)';
+            document.getElementById('dynamicSettingsTitle').innerHTML = '<i class="fa-regular fa-images ml-1"></i> ' + (currentLang === 'ar' ? 'عدد الصور' : 'Images Count');
             document.getElementById('extendContainer').classList.add('hidden');
             if(!modelData.counts.includes(currentGenSetting)) currentGenSetting = modelData.counts[0];
             modelData.counts.forEach(count => {
@@ -230,13 +251,13 @@
                 settingsContainer.appendChild(btn);
             });
         } else {
-            document.getElementById('dynamicSettingsTitle').innerHTML = '<i class="fa-regular fa-clock ml-1"></i> مدة الفيديو (ثوانٍ)';
+            document.getElementById('dynamicSettingsTitle').innerHTML = '<i class="fa-regular fa-clock ml-1"></i> ' + (currentLang === 'ar' ? 'المدة' : 'Duration');
             document.getElementById('extendContainer').classList.remove('hidden');
             if(!modelData.durations.includes(currentGenSetting)) currentGenSetting = modelData.durations[0];
             modelData.durations.forEach(dur => {
                 const btn = document.createElement('button');
                 btn.className = `flex-1 py-2 rounded-xl text-xs font-bold border border-white/10 transition-all ${dur === currentGenSetting ? 'bg-white text-black shadow-sm' : 'bg-transparent text-gray-400 hover:bg-white/5'}`;
-                btn.innerText = dur + " ثانية";
+                btn.innerText = dur + (currentLang === 'ar' ? " ثانية" : "s");
                 btn.onclick = () => { currentGenSetting = dur; updateGenUI(); };
                 settingsContainer.appendChild(btn);
             });
@@ -319,8 +340,8 @@
             welcomeSection.classList.add('hidden');
             inspirationSection.classList.add('hidden');
             chatSection.classList.remove('hidden');
-            const newId = Date.now();
-            chatHistoryData.unshift({ id: newId, title: text.substring(0, 25) || "محادثة جديدة", pinned: false, locked: false, pin: null });
+            const newId = "chat_" + Date.now();
+            chatHistoryData.unshift({ id: newId, title: text.substring(0, 25) || "...", pinned: false, locked: false, pin: null });
             currentChatId = newId;
             renderChatHistory();
         }
@@ -341,7 +362,7 @@
 
         msgDiv.innerHTML = `
             ${attachmentsHtml}
-            <div class="bg-white text-black p-3.5 rounded-2xl rounded-tr-none text-sm font-bold shadow-xl max-w-[85%] leading-relaxed">${text || (currentMode === 'image' ? 'توليد صورة فنية...' : 'توليد فيديو سينمائي...')}</div>
+            <div class="bg-white text-black p-3.5 rounded-2xl rounded-tr-none text-sm font-bold shadow-xl max-w-[85%] leading-relaxed">${text || '...'}</div>
         `;
         chatSection.appendChild(msgDiv);
         
@@ -356,42 +377,6 @@
         
         chatSection.scrollTop = chatSection.scrollHeight;
         workspaceArea.scrollTop = workspaceArea.scrollHeight;
-
-        // Mock Bot Response
-        setTimeout(() => {
-            const botDiv = document.createElement('div');
-            botDiv.className = "flex flex-col gap-2 items-start mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500";
-            
-            let botContent = '';
-            if(currentMode === 'chat') {
-                botContent = `<div class="bg-zinc-900 border border-white/5 text-gray-200 p-4 rounded-2xl rounded-tl-none text-sm font-medium shadow-lg max-w-[90%] leading-relaxed">أهلاً بك! أنا مصر الذكية، كيف يمكنني مساعدتك اليوم في هذا الاستوديو الشامل؟</div>`;
-            } else if(currentMode === 'image') {
-                const mockImg = "https://picsum.photos/seed/"+Date.now()+"/800/800";
-                botContent = `
-                    <div class="text-[10px] text-gray-500 mb-1 font-bold mr-1">تم التوليد بواسطة ${currentModel}</div>
-                    <div class="relative group">
-                        <img src="${mockImg}" class="w-full rounded-2xl border border-white/10 shadow-2xl cursor-pointer transition group-hover:brightness-110" onclick="viewMedia('${mockImg}', 'image')">
-                        <div class="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button class="w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white text-xs"><i class="fa-solid fa-download"></i></button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                botContent = `
-                    <div class="text-[10px] text-gray-500 mb-1 font-bold mr-1">تم التوليد بواسطة ${currentModel}</div>
-                    <div class="relative group aspect-video bg-zinc-900 rounded-2xl border border-white/10 flex items-center justify-center overflow-hidden">
-                        <i class="fa-solid fa-play text-3xl text-white/20"></i>
-                        <div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition cursor-pointer" onclick="viewMedia('https://www.w3schools.com/html/mov_bbb.mp4', 'video')">
-                             <div class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl scale-90 group-hover:scale-100 transition"><i class="fa-solid fa-play ml-1"></i></div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            botDiv.innerHTML = botContent;
-            chatSection.appendChild(botDiv);
-            workspaceArea.scrollTop = workspaceArea.scrollHeight;
-        }, 1500);
     });
 
     // --- UI Helpers ---
@@ -443,16 +428,16 @@
 
     // --- Sidebar Features ---
     document.getElementById('themeToggleBtnSidebar').addEventListener('click', () => { document.body.classList.toggle('light-mode'); });
-    document.getElementById('langToggleBtnSidebar').addEventListener('click', function() { this.querySelector('span:first-child').innerText = (this.querySelector('span:first-child').innerText === 'EN') ? 'AR' : 'EN'; });
+    document.getElementById('langToggleBtnSidebar').addEventListener('click', toggleLanguage);
 
     // Initial Setup
+    initTranslations();
     renderChatHistory();
     setMode('chat');
 
 /**
  * ============================================================
  * ربط Appwrite - نظام الحماية والمزامنة الفورية
- * يتم حقن هذه الوظائف لتعمل مع التصميم الأصلي دون تعديله
  * ============================================================
  */
 
@@ -471,36 +456,30 @@ const appwriteAccount = new Appwrite.Account(appwriteClient);
 const appwriteDatabases = new Appwrite.Databases(appwriteClient);
 
 const SmartEgypt_Auth = {
-    // تسجيل الدخول بجوجل مع إغلاق فوري للنافذة وتحويل دقيق
     login: function() {
         closeCenterModal('loginModal');
         const currentUrl = window.location.origin + window.location.pathname;
         appwriteAccount.createOAuth2Session('google', currentUrl, currentUrl);
     },
 
-    // جلب بيانات المستخدم وتحديث الواجهة
     syncUser: async function() {
         try {
             const user = await appwriteAccount.get();
             if (user) {
-                // إخفاء زر الدخول وتحديث البيانات
-                const loginBtn = document.querySelector('button[onclick="openCenterModal(\'loginModal\')"]');
+                const loginBtn = document.getElementById('loginBtnSidebar');
                 if (loginBtn) loginBtn.classList.add('hidden');
                 
-                document.querySelector('.text-white.text-sm.font-bold.truncate').innerText = user.name || user.email;
-                document.querySelector('.text-gray-400.text-[10px].truncate.mt-0.5').innerText = "حساب موثق";
+                document.querySelector('[data-i18n="smart_guest"]').innerText = user.name || user.email;
+                document.querySelector('[data-i18n="manage_account"]').innerText = translations[currentLang]?.manage_account || "Verified Account";
                 document.querySelector('#profileMenuBtn img').src = `https://ui-avatars.com/api/?name=${user.name}&background=0D8ABC&color=fff`;
                 
-                // جلب سجل المحادثات الحقيقي
                 this.loadRealHistory(user.$id);
             }
-        } catch (e) { console.log("المستخدم غير مسجل دخول حالياً."); }
+        } catch (e) { console.log("المستخدم غير مسجل دخول."); }
     },
 
-    // جلب سجل المحادثات مع حماية التوكن
     loadRealHistory: async function(userId) {
         try {
-            const jwt = await appwriteAccount.createJWT(); // توكن الحماية الرسمي لكل طلب
             const response = await appwriteDatabases.listDocuments(
                 AppAPI_Config.DATABASE_ID,
                 AppAPI_Config.COLLECTION_CHATS_ID,
@@ -520,6 +499,5 @@ const SmartEgypt_Auth = {
     }
 };
 
-// ربط الأزرار بالوظائف الجديدة
-document.querySelector('#loginModal button').onclick = () => SmartEgypt_Auth.login();
+document.getElementById('googleLoginBtn').onclick = () => SmartEgypt_Auth.login();
 window.addEventListener('DOMContentLoaded', () => SmartEgypt_Auth.syncUser());
