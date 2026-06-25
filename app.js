@@ -34,7 +34,6 @@
         document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
         document.getElementById('currentLangLabel').innerText = currentLang.toUpperCase();
         
-        // تحديث النصوص الديناميكية في الواجهة
         if (currentMode) setMode(currentMode);
     }
 
@@ -44,14 +43,12 @@
         applyTranslations();
     }
 
-    // --- App Configuration & Initial Data ---
     const appData = {
         chat: { titleKey: "chat_studio", icon: "fa-regular fa-comment-dots", placeholderKey: "input_placeholder", models: { "DeepSeek V4 Pro": { desc: "أقوى نموذج للدردشة والتحليل المعمق" }, "GPT-4o Premium": { desc: "النموذج الأكثر ذكاءً وتطوراً من OpenAI" }, "Claude 3.5 Sonnet": { desc: "مثالي للكتابة الإبداعية والبرمجة" } } },
         image: { titleKey: "image_studio", icon: "fa-regular fa-image", placeholderKey: "image_desc", models: { "Flux 1.1 Pro": { desc: "دقة فوتوغرافية وتفاصيل مذهلة", ratios: ["1:1", "16:9", "9:16", "3:2", "2:3"], counts: [1, 2, 4], extendable: false }, "DALL-E 3 High": { desc: "فهم عميق للوصف الفني المعقد", ratios: ["1:1", "16:9", "9:16"], counts: [1], extendable: false }, "Midjourney V6": { desc: "لمسة فنية سينمائية فريدة", ratios: ["1:1", "16:9", "9:16", "4:5"], counts: [1, 4], extendable: false } } },
         video: { titleKey: "video_studio", icon: "fa-solid fa-clapperboard", placeholderKey: "video_desc", models: { "Veo 3.1": { desc: "واقعية مذهلة وحركية عالية", ratios: ["16:9", "9:16"], durations: [4, 8], extendable: true }, "LTX 2.3": { desc: "دقة تحكم سينمائي", ratios: ["16:9", "1:1"], durations: [5, 10, 15], extendable: true } } }
     };
 
-    // حذف البيانات الوهمية - الاعتماد كلياً على قاعدة البيانات
     let chatHistoryData = []; 
     let activeActionChatId = null;
     let currentChatId = null;
@@ -78,12 +75,10 @@
     const generativeOptionsSection = document.getElementById('generativeOptionsSection');
     const chatModelSelectorTrigger = document.getElementById('chatModelSelectorTrigger');
 
-    // --- Sidebar Chat Logic ---
     function renderChatHistory() {
         const container = document.getElementById('chatHistoryContainer');
         container.innerHTML = '';
         const lang = translations[currentLang] || {};
-        
         const sortedChats = [...chatHistoryData].sort((a, b) => (b.pinned === a.pinned) ? 0 : a.pinned ? -1 : 1);
 
         sortedChats.forEach(chat => {
@@ -124,9 +119,11 @@
         } else {
             currentChatId = id;
             renderChatHistory();
-            chatSection.innerHTML = `<div class="text-center text-xs text-gray-500 py-6 font-bold bg-zinc-900/50 rounded-xl mx-2 border border-white/5">...</div>`;
+            chatSection.innerHTML = `<div class="text-center text-xs text-gray-500 py-10 animate-pulse"><i class="fa-solid fa-circle-notch fa-spin text-xl mb-2 block"></i> جاري تحميل الرسائل...</div>`;
             setMode('chat');
             toggleSidebar();
+            // جلب الرسائل الحقيقية من Appwrite
+            SmartEgypt_Auth.loadChatMessages(id);
         }
     };
 
@@ -136,9 +133,8 @@
     window.saveChatRename = function() { const newTitle = document.getElementById('renameChatInput').value.trim(); if(newTitle && activeActionChatId) { const chat = chatHistoryData.find(c => c.id === activeActionChatId); if(chat) chat.title = newTitle; renderChatHistory(); } closeCenterModal('renameChatModal'); };
     window.openLockModal = function(e, id) { e.stopPropagation(); closeAllChatMenus(); const chat = chatHistoryData.find(c => c.id === id); if(!chat) return; activeActionChatId = id; if (chat.locked) { chat.locked = false; chat.pin = null; renderChatHistory(); } else { document.getElementById('setPinInput').value = ''; openCenterModal('setLockModal'); } };
     window.saveChatLock = function() { const pin = document.getElementById('setPinInput').value; if(pin.length === 4 && activeActionChatId) { const chat = chatHistoryData.find(c => c.id === activeActionChatId); if(chat) { chat.locked = true; chat.pin = pin; renderChatHistory(); closeCenterModal('setLockModal'); } } };
-    window.verifyChatUnlock = function() { const pin = document.getElementById('unlockPinInput').value; if(activeActionChatId) { const chat = chatHistoryData.find(c => c.id === activeActionChatId); if (chat && chat.pin === pin) { closeCenterModal('unlockChatModal'); setTimeout(() => { currentChatId = chat.id; renderChatHistory(); setMode('chat'); toggleSidebar(); }, 300); } } };
+    window.verifyChatUnlock = function() { const pin = document.getElementById('unlockPinInput').value; if(activeActionChatId) { const chat = chatHistoryData.find(c => c.id === activeActionChatId); if (chat && chat.pin === pin) { closeCenterModal('unlockChatModal'); setTimeout(() => { currentChatId = chat.id; renderChatHistory(); setMode('chat'); toggleSidebar(); SmartEgypt_Auth.loadChatMessages(chat.id); }, 300); } } };
 
-    // --- Mode Switching ---
     document.getElementById('modeSelectorTrigger').addEventListener('click', () => { document.getElementById('modeSelectModal').classList.add('active'); });
     document.querySelectorAll('.mode-option').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -224,7 +220,6 @@
     function updateGenUI() {
         const modelData = activeModelsList[currentModel];
         document.getElementById('selectedModelLabel').innerText = currentModel;
-        
         const ratioContainer = document.getElementById('ratioContainer');
         ratioContainer.innerHTML = '';
         if(!modelData.ratios.includes(currentRatio)) currentRatio = modelData.ratios[0];
@@ -238,7 +233,6 @@
 
         const settingsContainer = document.getElementById('dynamicSettingsContainer');
         settingsContainer.innerHTML = '';
-        
         if(currentMode === 'image') {
             document.getElementById('dynamicSettingsTitle').innerHTML = '<i class="fa-regular fa-images ml-1"></i> ' + (currentLang === 'ar' ? 'عدد الصور' : 'Images Count');
             document.getElementById('extendContainer').classList.add('hidden');
@@ -261,7 +255,6 @@
                 btn.onclick = () => { currentGenSetting = dur; updateGenUI(); };
                 settingsContainer.appendChild(btn);
             });
-            
             const sw = document.getElementById('extendSwitch');
             if(isExtended) sw.classList.add('active'); else sw.classList.remove('active');
             sw.onclick = () => { isExtended = !isExtended; updateGenUI(); };
@@ -315,7 +308,6 @@
     }
     window.removeChatImage = function(idx) { chatAttachedImages.splice(idx, 1); renderChatPreviews(); validateSendButton(); };
 
-    // --- Core Logic ---
     promptInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
@@ -327,12 +319,11 @@
         let isValid = text !== '';
         if(currentMode === 'chat' && chatAttachedImages.length > 0) isValid = true;
         if(currentMode !== 'chat' && Object.keys(currentImages).length > 0) isValid = true;
-
         if(isValid) { sendBtn.classList.remove('opacity-40', 'pointer-events-none'); sendBtn.classList.add('bg-white'); }
         else { sendBtn.classList.add('opacity-40', 'pointer-events-none'); sendBtn.classList.remove('bg-white'); }
     }
 
-    sendBtn.addEventListener('click', () => {
+    sendBtn.addEventListener('click', async () => {
         const text = promptInput.value.trim();
         if(text === '' && (currentMode !== 'chat' || chatAttachedImages.length === 0)) return;
 
@@ -341,31 +332,20 @@
             inspirationSection.classList.add('hidden');
             chatSection.classList.remove('hidden');
             const newId = "chat_" + Date.now();
-            chatHistoryData.unshift({ id: newId, title: text.substring(0, 25) || "...", pinned: false, locked: false, pin: null });
+            const newChat = { id: newId, title: text.substring(0, 25) || "...", pinned: false, locked: false, pin: null };
+            chatHistoryData.unshift(newChat);
             currentChatId = newId;
             renderChatHistory();
+            // حفظ المحادثة الجديدة في Appwrite
+            SmartEgypt_Auth.saveNewChatToCloud(newChat);
         }
 
-        const msgDiv = document.createElement('div');
-        msgDiv.className = "flex flex-col gap-2 items-end mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300";
+        // عرض الرسالة فوراً في الواجهة
+        appendMessageToUI('user', text, chatAttachedImages, currentMode);
         
-        let attachmentsHtml = '';
-        if(currentMode === 'chat' && chatAttachedImages.length > 0) {
-            attachmentsHtml = `<div class="flex gap-1 flex-wrap justify-end mb-1">` + 
-                chatAttachedImages.map(img => `<img src="${img}" class="w-20 h-20 object-cover rounded-lg border border-white/10 shadow-lg" onclick="viewMedia('${img}', 'image')">`).join('') + 
-                `</div>`;
-        } else if (currentMode !== 'chat' && Object.keys(currentImages).length > 0) {
-            attachmentsHtml = `<div class="flex gap-1 flex-wrap justify-end mb-1">` + 
-                Object.values(currentImages).map(img => `<img src="${img}" class="w-16 h-16 object-cover rounded-lg border border-white/10 opacity-60">`).join('') + 
-                `</div>`;
-        }
+        // حفظ الرسالة في Appwrite
+        SmartEgypt_Auth.saveMessageToCloud(currentChatId, 'user', text, chatAttachedImages, currentMode);
 
-        msgDiv.innerHTML = `
-            ${attachmentsHtml}
-            <div class="bg-white text-black p-3.5 rounded-2xl rounded-tr-none text-sm font-bold shadow-xl max-w-[85%] leading-relaxed">${text || '...'}</div>
-        `;
-        chatSection.appendChild(msgDiv);
-        
         promptInput.value = '';
         promptInput.style.height = 'auto';
         chatAttachedImages = [];
@@ -379,7 +359,27 @@
         workspaceArea.scrollTop = workspaceArea.scrollHeight;
     });
 
-    // --- UI Helpers ---
+    function appendMessageToUI(sender, text, media, mode) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `flex flex-col gap-2 ${sender === 'user' ? 'items-end' : 'items-start'} mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300`;
+        
+        let mediaHtml = '';
+        if(media && media.length > 0) {
+            mediaHtml = `<div class="flex gap-1 flex-wrap ${sender === 'user' ? 'justify-end' : 'justify-start'} mb-1">` + 
+                media.map(src => `<img src="${src}" class="w-24 h-24 object-cover rounded-lg border border-white/10 shadow-lg" onclick="viewMedia('${src}', 'image')">`).join('') + 
+                `</div>`;
+        }
+
+        msgDiv.innerHTML = `
+            ${mediaHtml}
+            <div class="${sender === 'user' ? 'bg-white text-black rounded-tr-none' : 'bg-zinc-800 text-white rounded-tl-none'} p-3.5 rounded-2xl text-sm font-bold shadow-xl max-w-[85%] leading-relaxed">${text || '...'}</div>
+        `;
+        chatSection.appendChild(msgDiv);
+        chatSection.classList.remove('hidden');
+        welcomeSection.classList.add('hidden');
+        inspirationSection.classList.add('hidden');
+    }
+
     window.toggleSidebar = function() {
         const sidebar = document.getElementById('appSidebar');
         const overlay = document.getElementById('sidebarOverlay');
@@ -409,14 +409,9 @@
         const modal = document.getElementById('mediaViewerModal');
         const img = document.getElementById('mediaViewerImage');
         const video = document.getElementById('mediaViewerVideo');
-        
-        img.classList.add('hidden');
-        video.classList.add('hidden');
-        video.pause();
-
+        img.classList.add('hidden'); video.classList.add('hidden'); video.pause();
         if(type === 'image') { img.src = src; img.classList.remove('hidden'); }
         else { video.src = src; video.classList.remove('hidden'); video.play(); }
-
         modal.classList.add('active');
         document.getElementById('mediaDownloadBtn').onclick = () => { const a = document.createElement('a'); a.href = src; a.download = 'SmartEgypt_Media'; a.click(); };
     };
@@ -426,18 +421,16 @@
         document.getElementById('mediaViewerVideo').pause();
     };
 
-    // --- Sidebar Features ---
     document.getElementById('themeToggleBtnSidebar').addEventListener('click', () => { document.body.classList.toggle('light-mode'); });
     document.getElementById('langToggleBtnSidebar').addEventListener('click', toggleLanguage);
 
-    // Initial Setup
     initTranslations();
     renderChatHistory();
     setMode('chat');
 
 /**
  * ============================================================
- * ربط Appwrite - نظام الحماية والمزامنة الفورية
+ * ربط Appwrite - المزامنة الحقيقية للرسائل والوسائط
  * ============================================================
  */
 
@@ -445,7 +438,8 @@ const AppAPI_Config = {
     PROJECT_ID: '6a3d46ce0001fa77a613',
     ENDPOINT: 'https://fra.cloud.appwrite.io/v1',
     DATABASE_ID: '6a3da226000f35fb5466',
-    COLLECTION_CHATS_ID: 'chats'
+    COLLECTION_CHATS_ID: 'chats',
+    COLLECTION_MESSAGES_ID: 'messages'
 };
 
 const appwriteClient = new Appwrite.Client()
@@ -456,6 +450,8 @@ const appwriteAccount = new Appwrite.Account(appwriteClient);
 const appwriteDatabases = new Appwrite.Databases(appwriteClient);
 
 const SmartEgypt_Auth = {
+    currentUser: null,
+
     login: function() {
         closeCenterModal('loginModal');
         const currentUrl = window.location.origin + window.location.pathname;
@@ -464,38 +460,65 @@ const SmartEgypt_Auth = {
 
     syncUser: async function() {
         try {
-            const user = await appwriteAccount.get();
-            if (user) {
+            this.currentUser = await appwriteAccount.get();
+            if (this.currentUser) {
                 const loginBtn = document.getElementById('loginBtnSidebar');
                 if (loginBtn) loginBtn.classList.add('hidden');
-                
-                document.querySelector('[data-i18n="smart_guest"]').innerText = user.name || user.email;
-                document.querySelector('[data-i18n="manage_account"]').innerText = translations[currentLang]?.manage_account || "Verified Account";
-                document.querySelector('#profileMenuBtn img').src = `https://ui-avatars.com/api/?name=${user.name}&background=0D8ABC&color=fff`;
-                
-                this.loadRealHistory(user.$id);
+                document.querySelector('[data-i18n="smart_guest"]').innerText = this.currentUser.name;
+                document.querySelector('#profileMenuBtn img').src = `https://ui-avatars.com/api/?name=${this.currentUser.name}&background=0D8ABC&color=fff`;
+                this.loadRealHistory(this.currentUser.$id);
             }
-        } catch (e) { console.log("المستخدم غير مسجل دخول."); }
+        } catch (e) { console.log("Guest User"); }
     },
 
     loadRealHistory: async function(userId) {
         try {
-            const response = await appwriteDatabases.listDocuments(
-                AppAPI_Config.DATABASE_ID,
-                AppAPI_Config.COLLECTION_CHATS_ID,
-                [Appwrite.Query.equal('userId', userId)]
-            );
-            if (response.documents.length > 0) {
-                chatHistoryData = response.documents.map(doc => ({
-                    id: doc.$id,
-                    title: doc.title,
-                    pinned: false,
-                    locked: false,
-                    pin: null
-                }));
-                renderChatHistory();
+            const response = await appwriteDatabases.listDocuments(AppAPI_Config.DATABASE_ID, AppAPI_Config.COLLECTION_CHATS_ID, [Appwrite.Query.equal('userId', userId), Appwrite.Query.orderDesc('createdAt')]);
+            chatHistoryData = response.documents.map(doc => ({ id: doc.$id, title: doc.title, pinned: false, locked: false, pin: null }));
+            renderChatHistory();
+        } catch (e) { console.error("History Sync Error"); }
+    },
+
+    loadChatMessages: async function(chatId) {
+        try {
+            const response = await appwriteDatabases.listDocuments(AppAPI_Config.DATABASE_ID, AppAPI_Config.COLLECTION_MESSAGES_ID, [Appwrite.Query.equal('chatId', chatId), Appwrite.Query.orderAsc('createdAt')]);
+            chatSection.innerHTML = '';
+            if(response.documents.length === 0) {
+                chatSection.innerHTML = `<div class="text-center text-xs text-gray-500 py-10">ابدأ المحادثة الآن...</div>`;
+            } else {
+                response.documents.forEach(doc => {
+                    const media = doc.mediaUrl ? [doc.mediaUrl] : [];
+                    appendMessageToUI(doc.sender, doc.text, media, doc.mediaType);
+                });
             }
-        } catch (e) { console.error("خطأ في مزامنة السجل:", e); }
+            chatSection.scrollTop = chatSection.scrollHeight;
+        } catch (e) { console.error("Messages Load Error"); }
+    },
+
+    saveNewChatToCloud: async function(chat) {
+        if(!this.currentUser) return;
+        try {
+            await appwriteDatabases.createDocument(AppAPI_Config.DATABASE_ID, AppAPI_Config.COLLECTION_CHATS_ID, chat.id, {
+                userId: this.currentUser.$id,
+                title: chat.title,
+                createdAt: new Date().toISOString()
+            });
+        } catch (e) { console.error("Chat Save Error"); }
+    },
+
+    saveMessageToCloud: async function(chatId, sender, text, media, mode) {
+        if(!this.currentUser) return;
+        try {
+            const mediaUrl = media && media.length > 0 ? media[0] : null; // تبسيط للرفع الأول
+            await appwriteDatabases.createDocument(AppAPI_Config.DATABASE_ID, AppAPI_Config.COLLECTION_MESSAGES_ID, 'ID' + Date.now(), {
+                chatId: chatId,
+                sender: sender,
+                text: text || "",
+                mediaUrl: mediaUrl,
+                mediaType: mode,
+                createdAt: new Date().toISOString()
+            });
+        } catch (e) { console.error("Message Save Error"); }
     }
 };
 
