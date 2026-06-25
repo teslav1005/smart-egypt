@@ -29,10 +29,12 @@ const SecurityManager = {
     // تسجيل الدخول بجوجل
     loginWithGoogle: function() {
         try {
+            // استخدام الرابط الكامل الحالي لضمان العودة الصحيحة في GitHub Pages
+            const currentUrl = window.location.origin + window.location.pathname;
             account.createOAuth2Session(
                 'google',
-                window.location.origin, // العودة لنفس الصفحة بعد النجاح
-                window.location.origin  // العودة لنفس الصفحة بعد الفشل
+                currentUrl, // العودة لنفس الصفحة بعد النجاح
+                currentUrl  // العودة لنفس الصفحة بعد الفشل
             );
         } catch (error) {
             console.error("خطأ في تسجيل الدخول:", error);
