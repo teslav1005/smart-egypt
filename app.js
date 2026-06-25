@@ -122,7 +122,6 @@
             chatSection.innerHTML = `<div class="text-center text-xs text-gray-500 py-10 animate-pulse"><i class="fa-solid fa-circle-notch fa-spin text-xl mb-2 block"></i> جاري تحميل الرسائل...</div>`;
             setMode('chat');
             toggleSidebar();
-            // جلب الرسائل الحقيقية من Appwrite
             SmartEgypt_Auth.loadChatMessages(id);
         }
     };
@@ -336,15 +335,14 @@
             chatHistoryData.unshift(newChat);
             currentChatId = newId;
             renderChatHistory();
-            // حفظ المحادثة الجديدة في Appwrite
             SmartEgypt_Auth.saveNewChatToCloud(newChat);
         }
 
-        // عرض الرسالة فوراً في الواجهة
         appendMessageToUI('user', text, chatAttachedImages, currentMode);
-        
-        // حفظ الرسالة في Appwrite
         SmartEgypt_Auth.saveMessageToCloud(currentChatId, 'user', text, chatAttachedImages, currentMode);
+
+        // إرسال الطلب إلى AI عبر Appwrite Function
+        SmartEgypt_Auth.callAIFunction(text, currentMode, currentModel);
 
         promptInput.value = '';
         promptInput.style.height = 'auto';
@@ -356,7 +354,6 @@
         optionsArea.classList.add('collapsed');
         
         chatSection.scrollTop = chatSection.scrollHeight;
-        workspaceArea.scrollTop = workspaceArea.scrollHeight;
     });
 
     function appendMessageToUI(sender, text, media, mode) {
@@ -378,6 +375,7 @@
         chatSection.classList.remove('hidden');
         welcomeSection.classList.add('hidden');
         inspirationSection.classList.add('hidden');
+        chatSection.scrollTop = chatSection.scrollHeight;
     }
 
     window.toggleSidebar = function() {
@@ -430,7 +428,7 @@
 
 /**
  * ============================================================
- * ربط Appwrite - المزامنة الحقيقية للرسائل والوسائط
+ * ربط Appwrite - المزامنة الحقيقية والذكاء الاصطناعي الآمن
  * ============================================================
  */
 
@@ -439,7 +437,8 @@ const AppAPI_Config = {
     ENDPOINT: 'https://fra.cloud.appwrite.io/v1',
     DATABASE_ID: '6a3da226000f35fb5466',
     COLLECTION_CHATS_ID: 'chats',
-    COLLECTION_MESSAGES_ID: 'messages'
+    COLLECTION_MESSAGES_ID: 'messages',
+    FUNCTION_AI_ID: '6a3d9658002685e5ea5e' // تأكد من مطابقة هذا المعرف في Appwrite Console
 };
 
 const appwriteClient = new Appwrite.Client()
@@ -448,6 +447,7 @@ const appwriteClient = new Appwrite.Client()
 
 const appwriteAccount = new Appwrite.Account(appwriteClient);
 const appwriteDatabases = new Appwrite.Databases(appwriteClient);
+const appwriteFunctions = new Appwrite.Functions(appwriteClient);
 
 const SmartEgypt_Auth = {
     currentUser: null,
@@ -509,7 +509,7 @@ const SmartEgypt_Auth = {
     saveMessageToCloud: async function(chatId, sender, text, media, mode) {
         if(!this.currentUser) return;
         try {
-            const mediaUrl = media && media.length > 0 ? media[0] : null; // تبسيط للرفع الأول
+            const mediaUrl = media && media.length > 0 ? media[0] : null;
             await appwriteDatabases.createDocument(AppAPI_Config.DATABASE_ID, AppAPI_Config.COLLECTION_MESSAGES_ID, 'ID' + Date.now(), {
                 chatId: chatId,
                 sender: sender,
@@ -519,6 +519,28 @@ const SmartEgypt_Auth = {
                 createdAt: new Date().toISOString()
             });
         } catch (e) { console.error("Message Save Error"); }
+    },
+
+    callAIFunction: async function(prompt, mode, model) {
+        try {
+            const response = await appwriteFunctions.createExecution(
+                AppAPI_Config.FUNCTION_AI_ID,
+                JSON.stringify({ prompt, mode, model }),
+                false,
+                '/',
+                'POST'
+            );
+            const data = JSON.parse(response.responseBody);
+            if (data.result) {
+                const media = mode !== 'chat' ? [data.result] : [];
+                const text = mode === 'chat' ? data.result : translations[currentLang]?.gen_success || "تم توليد النتيجة بنجاح!";
+                appendMessageToUI('ai', text, media, mode);
+                this.saveMessageToCloud(currentChatId, 'ai', text, media, mode);
+            }
+        } catch (e) {
+            console.error("AI Function Error:", e);
+            appendMessageToUI('ai', "عذراً، حدث خطأ في معالجة طلبك.", [], 'chat');
+        }
     }
 };
 
